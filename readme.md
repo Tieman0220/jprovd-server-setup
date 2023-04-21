@@ -17,7 +17,7 @@ SSH into server using credentials provided by OVH
 	`sudo ufw allow 22`
 7. Allow port 80 for Certbot/NGINX  
     `sudo ufw allow 80`
-8. Allow oirt 443 for Certbot/NGINX  
+8. Allow port 443 for Certbot/NGINX  
     `sudo ufw allow 443`
 9. Allow port 3333 for jprovd  
 	`sudo ufw allow 3333`
@@ -41,53 +41,57 @@ SSH into server using credentials provided by OVH
     `sudo systemctl restart unattended-upgrades.service`
 18. Make sure Unattended Upgrades is running
     `sudo systemctl status unattended-upgrades.service`
+#### [Disable phased updates](https://askubuntu.com/questions/1421222/update-upgrade-not-working-because-of-phased-updates)
+19. Create new apt configuration  
+    `sudo nano /etc/apt/apt.conf.d/30phased-upgrades`  
+    `APT::Get::Always-Include-Phased-Updates "true";`
 #### [Allocate Swap Space](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-22-04)
-19. Check free disk space  
+20. Check free disk space  
     `df -h`
-20. Create swap file of appropriate size  
+21. Create swap file of appropriate size  
     `sudo fallocate -l 260G /swapfile`
-21. Make swapfile only accessible to root  
+22. Make swapfile only accessible to root  
     `sudo chmod 600 /swapfile`
-22. Mark file as swap space  
+23. Mark file as swap space  
     `sudo mkswap /swapfile`
-23. Enable swap file  
+24. Enable swap file  
     `sudo swapon /swapfile`
-24. Check to make sure new swap space is available  
+25. Check to make sure new swap space is available  
     `free -h`
-25. Backup existing fstab file  
+26. Backup existing fstab file  
     `sudo cp /etc/fstab /etc/fstab.bak`
-26. Add new swap to the end of fstab to enable automatic mounting during boot   
+27. Add new swap to the end of fstab to enable automatic mounting during boot   
     `echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab`
-27. Change swappiness  
+28. Change swappiness  
     `sudo sysctl vm.swappiness=10`
-28. Change cache pressure  
+29. Change cache pressure  
     `sudo sysctl vm.vfs_cache_pressure=50`
-29. Persist changes across boot  
+30. Persist changes across boot  
     `sudo nano /etc/sysctl.conf`  
         ```
          vm.swappiness=10
          vm.vfs_cache_pressure=50
         ```
 ### ZFS Setup
-30. Install ZFS prerequisites  
+31. Install ZFS prerequisites  
     `sudo apt install zfsutils-linux`
-31. List disks  
+32. List disks  
     `sudo fdisk -l`
-32. List disks again to verify  
+33. List disks again to verify  
     `lsblk`
-33. Create striped zpool  
-    `sudo zpool create marston /dev/(whatever)`
-34. Check pool status  
+34. Create striped zpool  
+    `sudo zpool create [ZFS MOUNT POINT] /dev/(whatever)`
+35. Check pool status  
     `sudo zpool status`
 ### [NGINX Setup](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-22-04)
-35. Install NGINX      
+36. Install NGINX      
     `sudo apt install nginx`
-36. Create configuration for jprovd  
-    `sudo nano /etc/nginx/sites-available/mnp4`
+37. Create configuration for jprovd  
+    `sudo nano /etc/nginx/sites-available/[SUBDOMAIN]`
 
          server {
         
-                server_name mnp4.thepodocasts.com;
+                server_name [DOMAIN];
         
                 location / {
                         proxy_set_header Host $host;
@@ -95,20 +99,14 @@ SSH into server using credentials provided by OVH
                         proxy_pass http://localhost:3333;
                 }
         
-            listen [::]:443 ssl ipv6only=on; # managed by Certbot
-            listen 443 ssl; # managed by Certbot
-            ssl_certificate /etc/letsencrypt/live/mnp4.thepodocasts.com/fullchain.pem; # managed by Certbot
-            ssl_certificate_key /etc/letsencrypt/live/mnp4.thepodocasts.com/privkey.pem; # managed by Certbot
-            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-        
+
          }
         
          server {
                 listen 443;
                 listen [::]:433;
         
-                server_name mnp4.thepodocasts.com;
+                server_name [DOMAIN];
         
                 location / {
                 proxy_set_header Host $host;
@@ -116,33 +114,20 @@ SSH into server using credentials provided by OVH
                         proxy_pass http://localhost:3333;
                 }
          }
-         server {
-            if ($host = mnp4.thepodocasts.com) {
-                return 301 https://$host$request_uri;
-            } # managed by Certbot
-        
-        
-                listen 80;
-                listen [::]:80;
-        
-                server_name mnp4.thepodocasts.com;
-            return 404; # managed by Certbot
-        
-        
-         }
+
          
-37. Symlink to enable config   
-    `sudo ln -s /etc/nginx/sites-available/mnp4 /etc/nginx/sites-enabled/`
-38. Check NGINX config for relevant jprovd settings  
+38. Symlink to enable config   
+    `sudo ln -s /etc/nginx/sites-available/[SUBDOMAIN] /etc/nginx/sites-enabled/`
+39. Check NGINX config for relevant jprovd settings  
     `sudo nano /etc/nginx/conf.d/settings.conf`
      
-	     client_max_body_size 0;
+	 client_max_body_size 0;
          proxy_http_version 1.1;
          proxy_request_buffering off;
          proxy_read_timeout 1800;
          proxy_connect_timeout 1800;
          proxy_send_timeout 1800;
-39. Check NGINX config for relevant jprovd settings pt 2  
+40. Check NGINX config for relevant jprovd settings pt 2  
     `sudo nano /etc/nginx/nginx.conf`
      
          user www-data;
@@ -207,51 +192,30 @@ SSH into server using credentials provided by OVH
              include /etc/nginx/sites-enabled/*;
          }
          
-         
-         #mail {
-         #   # See sample authentication script at:
-         #   # http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
-         #
-         #   # auth_http localhost/auth.php;
-         #   # pop3_capabilities "TOP" "USER";
-         #   # imap_capabilities "IMAP4rev1" "UIDPLUS";
-         #
-         #   server {
-         #       listen     localhost:110;
-         #       protocol   pop3;
-         #       proxy      on;
-         #   }
-         #
-         #   server {
-         #       listen     localhost:143;
-         #       protocol   imap;
-         #       proxy      on;
-         #   }
-         #}
-40. Verify NGINX configuration
+41. Verify NGINX configuration
     `sudo nginx -t`
-41. Restart NGINX to apply configuration changes  
+42. Restart NGINX to apply configuration changes  
     `sudo systemctl restart nginx`
  #### [Certbot Setup](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
-42. Install Certbot Prerequisites  
+43. Install Certbot Prerequisites  
     `sudo snap install core; sudo snap refresh core`  
     `sudo snap install --classic certbot`
-43. Link the certbot command from the snap install directory to your path  
+44. Link the certbot command from the snap install directory to your path  
     `sudo ln -s /snap/bin/certbot /usr/bin/certbot`
-44. Run certbot to obtain certificate  
-    `sudo certbot --nginx -d mnp4.thepodocasts.com`
-45. Verify NGINX configuration  
+45. Run certbot to obtain certificate  
+    `sudo certbot --nginx -d [DOMAIN]`
+46. Verify NGINX configuration  
     `sudo nginx -t`
-46. Restart NGINX to apply changes  
+47. Restart NGINX to apply changes  
     `sudo systemctl restart nginx`
  ### [jprovd Installation and Setup](https://docs.jackaldao.com/docs/nodes/providers/setting_up)
-47. Install prerequisites  
+48. Install prerequisites  
     `sudo apt install build-essential lz4 jq`
-48. Install Go  
+49. Install Go  
     `GOVER=$(curl https://go.dev/VERSION?m=text)`  
     `wget https://golang.org/dl/${GOVER}.linux-amd64.tar.gz`  
     `sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${GOVER}.linux-amd64.tar.gz`
-49. Add golang path info to profile  
+50. Add golang path info to profile  
     `nano ~/.profile`
      
          # add environmental variables for Go
@@ -263,19 +227,19 @@ SSH into server using credentials provided by OVH
              export GO111MODULE=on
          fi
          
-50. Reload profile  
+51. Reload profile  
     `source ~/.profile`
-51. Install using git  
+52. Install using git  
     `git clone https://github.com/JackalLabs/canine-provider.git`  
     `cd canine-provider`  
     `git pull`  
-    `git checkout v1.0.5-claim-fix`
-52. Install jprovd  
+    `git checkout [VERSION]`
+53. Install jprovd  
     `make install`
-53. Generate private key and wallet for provider  
-    `jprovd client gen-key --home=/marston`
-54. Edit jprovd configuration  
-    `cd /marston/config`  
+54. Generate private key and wallet for provider  
+    `jprovd client gen-key --home=/[ZFS MOUNT POINT]`
+55. Edit jprovd configuration  
+    `cd /[ZFS MOUNT POINT]/config`  
     `nano client.toml`
      
          # This is a TOML config file.
@@ -292,32 +256,32 @@ SSH into server using credentials provided by OVH
          # CLI output format (text|json)
          output = "text"
          # <host>:<port> to Tendermint RPC interface for this chain
-         node = "https://jackal-podocasts-rpc.brocha.in:443"
+         node = "[YOUR RPC NODE]"
          # Transaction broadcasting mode (sync|async|block)
          broadcast-mode = ""
 
-55. Initialize provider  
-    `jprovd init "https://mnp4.thepodocasts.com" "75000000000000" "" --home=/marston`
-56. Create [unit file](https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files) to run jprovd as a service  
+56. Initialize provider  
+    `jprovd init "https://[DOMAIN]" "75000000000000" "" --home=/[ZFS MOUNT POINT]`
+57. Create [unit file](https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files) to run jprovd as a service  
     `sudo nano /etc/systemd/system/jprovd.service`
      
          [Unit]
          Description=Jackal Provider
          After=network-online.target
          [Service]
-         User=provider4
-         ExecStart=/home/provider1/go/bin/jprovd start --home=/marston
+         User=[USERNAME]
+         ExecStart=/home/[USERNAME]/go/bin/jprovd start --home=/[ZFS MOUNT POINT]
          Restart=always
          RestartSec=3
          LimitNOFILE=4096
          [Install]
          WantedBy=multi-user.target
          
-57. Reload unit files  
+58. Reload unit files  
     `sudo systemctl daemon-reload`
-58. Enable jprovd as a service  
+59. Enable jprovd as a service  
     `sudo systemctl enable jprovd.service`
-59. Start jprovd  
+60. Start jprovd  
     `sudo systemctl start jprovd.service`
-60. Verify jprovd status  
+61. Verify jprovd status  
     `sudo systemctl status jprovd.service`
