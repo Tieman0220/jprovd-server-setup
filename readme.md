@@ -39,7 +39,7 @@ SSH into server using credentials provided by OVH
  `sudo nano /etc/apt/apt.conf.d/50unattended-upgrades`
 17. Restart Unattended Upgrades (if changes made)  
     `sudo systemctl restart unattended-upgrades.service`
-18. Make sure Unattended Upgrades is running
+18. Make sure Unattended Upgrades is running  
     `sudo systemctl status unattended-upgrades.service`
 #### [Disable phased updates](https://askubuntu.com/questions/1421222/update-upgrade-not-working-because-of-phased-updates)
 19. Create new apt configuration  
@@ -120,13 +120,15 @@ SSH into server using credentials provided by OVH
     `sudo ln -s /etc/nginx/sites-available/[SUBDOMAIN] /etc/nginx/sites-enabled/`
 39. Check NGINX config for relevant jprovd settings  
     `sudo nano /etc/nginx/conf.d/settings.conf`
-     
-	 client_max_body_size 0;
-         proxy_http_version 1.1;
-         proxy_request_buffering off;
-         proxy_read_timeout 1800;
-         proxy_connect_timeout 1800;
-         proxy_send_timeout 1800;
+     	
+	    client_max_body_size 0;  
+        proxy_http_version 1.1;  
+        proxy_request_buffering off;  
+        proxy_read_timeout 1800;  
+        proxy_connect_timeout 1800;  
+        proxy_send_timeout 1800;  
+	
+	 
 40. Check NGINX config for relevant jprovd settings pt 2  
     `sudo nano /etc/nginx/nginx.conf`
      
