@@ -5,9 +5,9 @@ SSH into server using credentials provided by OVH
 	 `sudo apt update`  
 	 `sudo apt upgrade`
 2. Add new user  
-	 `sudo adduser provider4`
+	 `sudo adduser [USERNAME]`
 3. Add new used to sudo group  
-	 `sudo usermod -aG sudo provider4`
+	 `sudo usermod -aG sudo [USERNAME]`
 4. Reboot server  
 	 `sudo reboot now`
 5. Login after reboot as new user and disable default user   
