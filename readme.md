@@ -1,6 +1,6 @@
 ## Initial Setup
 
-This documentation is assuming you have a domain already purchased and a DNS A record pointed to the server.
+This documentation is assuming you have a domain already purchased and a DNS A record pointed to the server. It also assumes you are running this on an OVH Bare Metal server but with a good amount of judgement can be used otherwise as well.
 
 ### Housekeeping/Security Standardization
 SSH into server using credentials provided by OVH
