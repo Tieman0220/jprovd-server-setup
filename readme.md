@@ -267,7 +267,7 @@ SSH into server using credentials provided by OVH
          broadcast-mode = ""
 
 57. Initialize provider  
-    `jprovd init "https://[DOMAIN]" "75000000000000" "" --home=/[ZFS MOUNT POINT]`
+    `jprovd init "https://[DOMAIN]" "[STORAGE SPACE IN BYTES]" "" --home=/[ZFS MOUNT POINT]`
 58. Create [unit file](https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files) to run jprovd as a service  
     `sudo nano /etc/systemd/system/jprovd.service`
      
