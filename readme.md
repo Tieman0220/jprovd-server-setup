@@ -1,5 +1,8 @@
 ## Initial Setup
- ### Housekeeping/Security Standardization
+
+This documentation is assuming you have a domain already purchased and a DNS A record pointed to the server.
+
+### Housekeeping/Security Standardization
 SSH into server using credentials provided by OVH
 1. Download and install updates  
 	 `sudo apt update`  
@@ -240,7 +243,8 @@ SSH into server using credentials provided by OVH
     `make install`
 54. Generate private key and wallet for provider  
     `jprovd client gen-key --home=/[ZFS MOUNT POINT]`
-55. Edit jprovd configuration  
+55. Add funds to your new provider wallet to cover gas. 50 or so jkl should do.
+56. Edit jprovd configuration  
     `cd /[ZFS MOUNT POINT]/config`  
     `nano client.toml`
      
@@ -262,9 +266,9 @@ SSH into server using credentials provided by OVH
          # Transaction broadcasting mode (sync|async|block)
          broadcast-mode = ""
 
-56. Initialize provider  
+57. Initialize provider  
     `jprovd init "https://[DOMAIN]" "75000000000000" "" --home=/[ZFS MOUNT POINT]`
-57. Create [unit file](https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files) to run jprovd as a service  
+58. Create [unit file](https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files) to run jprovd as a service  
     `sudo nano /etc/systemd/system/jprovd.service`
      
          [Unit]
@@ -279,11 +283,13 @@ SSH into server using credentials provided by OVH
          [Install]
          WantedBy=multi-user.target
          
-58. Reload unit files  
+59. Reload unit files  
     `sudo systemctl daemon-reload`
-59. Enable jprovd as a service  
+60. Enable jprovd as a service  
     `sudo systemctl enable jprovd.service`
-60. Start jprovd  
+61. Start jprovd  
     `sudo systemctl start jprovd.service`
-61. Verify jprovd status  
+62. Verify jprovd status  
     `sudo systemctl status jprovd.service`
+63. Backup your provider private key somehow - write it down or put it in your password manager  
+    `cat /[ZFS MOUNT POINT]/config/priv_storkey.json`
